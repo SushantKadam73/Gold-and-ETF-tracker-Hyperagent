@@ -1,18 +1,17 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import { use } from "react";
 import {
   formatINR, istDateTime, istTime, premiumVsInav, premiumVsNav, spreadPct, pctClass,
 } from "../../../lib/format";
+import { useEtfDetail } from "../../../lib/useData";
 
 export default function EtfDetailPage({ params }: { params: Promise<{ isin: string }> }) {
   const { isin } = use(params);
-  const data = useQuery(api.functions.etfDetail, { isin });
+  const data = useEtfDetail(isin);
 
   if (data === undefined) return <p className="py-20 text-center text-sm text-zinc-500">Loading…</p>;
-  if (data === null) return <p className="py-20 text-center text-sm text-zinc-500">ETF not found.</p>;
+  if (data === null) return <p className="py-20 text-center text-sm text-zinc-500">Backend not connected yet.</p>;
 
   const { etf, quote, inav, nav, metrics } = data as any;
   const now = Date.now();

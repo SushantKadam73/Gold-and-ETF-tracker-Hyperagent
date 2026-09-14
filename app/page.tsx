@@ -1,17 +1,25 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   formatINR, istTime, premiumVsInav, premiumVsNav, spreadPct, pctClass,
 } from "../lib/format";
+import { useDashboard } from "../lib/useData";
 
 export default function DashboardPage() {
-  const rows = useQuery(api.functions.dashboard);
+  const rows = useDashboard();
 
   if (rows === undefined) {
     return <p className="py-20 text-center text-sm text-zinc-500">Loading ETFs…</p>;
+  }
+  if (rows === null) {
+    return (
+      <div className="py-20 text-center text-sm text-zinc-500">
+        <p>Backend not connected yet.</p>
+        <p className="mt-2 text-xs">Set NEXT_PUBLIC_CONVEX_URL and seed the universe to load live data.</p>
+      </div>
+    );
   }
 
   const gold = rows.filter((r: any) => r.etf.metal === "gold");

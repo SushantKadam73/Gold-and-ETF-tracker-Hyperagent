@@ -1,13 +1,17 @@
 "use client";
 
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ReactNode, useEffect } from "react";
-
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL as string);
+import { ReactNode, useEffect, useMemo } from "react";
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
+  // Create the client only when the URL is present, so the build/prerender
+  // succeeds before NEXT_PUBLIC_CONVEX_URL is configured.
+  const client = useMemo(() => {
+    const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+    return url ? new ConvexReactClient(url) : null;
+  }, []);
+
   useEffect(() => {
-    // theme init + toggle (no flash)
     const stored = typeof window !== "undefined" ? localStorage.getItem("theme") : null;
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const dark = stored ? stored === "dark" : prefersDark;
@@ -21,5 +25,10 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     return () => btn?.removeEventListener("click", onClick);
   }, []);
 
-  return <ConvexProvider client={convex}>{children}</ConvexProvider>;
+  if (!client) {
+    // No backend configured yet — render the shell without live data.
+    return <>{children}</>;
+  }
+  return <ConvexProvider client={client}>{children}</ConvexProvider>;
 }
+
