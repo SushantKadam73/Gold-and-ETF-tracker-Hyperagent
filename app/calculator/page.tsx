@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { formatINR } from "../lib/format";
+import { formatINR } from "../../lib/format";
 
 /**
  * ETF vs Physical cost calculator. Inputs stay in the browser — nothing is sent or stored.

@@ -1,11 +1,11 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 import { use } from "react";
 import {
   formatINR, istDateTime, istTime, premiumVsInav, premiumVsNav, spreadPct, pctClass,
-} from "../../lib/format";
+} from "../../../lib/format";
 
 export default function EtfDetailPage({ params }: { params: Promise<{ isin: string }> }) {
   const { isin } = use(params);
