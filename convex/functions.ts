@@ -183,8 +183,7 @@ export const upsertTrackingMetric = internalMutation({
   },
 });
 
-export const logFetch = internalMutation({
-  args: {
+export const logFetch = internalMutation({  args: {
     jobName: v.string(),
     status: v.string(),
     startedAt: v.number(),
@@ -201,6 +200,47 @@ function normalize(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+/**
+ * Register newly discovered ETFs as status 'pending_review' (not live).
+ * A fund goes live only after its grams-per-unit is verified and status set to 'active'.
+ */
+export const registerDiscovered = internalMutation({
+  args: {
+    schemes: v.array(v.object({
+      schemeId: v.string(),
+      ISINPrimary: v.string(),
+      schemeName: v.string(),
+      _metal: v.optional(v.string()),
+    })),
+  },
+  handler: async (ctx, { schemes }) => {
+    const now = Date.now();
+    let added = 0;
+    const addedNames: string[] = [];
+    for (const s of schemes) {
+      const existing = await ctx.db.query("etfs").withIndex("by_isin", (q) => q.eq("isin", s.ISINPrimary)).unique();
+      if (existing) continue; // already tracked
+      await ctx.db.insert("etfs", {
+        schemeName: s.schemeName,
+        amcName: "",
+        metal: (s._metal === "silver" ? "silver" : "gold") as any,
+        isin: s.ISINPrimary,
+        nseSymbol: "", // resolved on review
+        bseSymbol: null,
+        upstoxKey: `NSE_EQ|${s.ISINPrimary}`,
+        gramsPerUnit: 0, // unknown until verified — 0 marks it pending
+        faceValueNote: "auto-discovered; grams-per-unit pending verification",
+        amfiSchemeId: s.schemeId,
+        status: "pending_review",
+        updatedAt: now,
+      });
+      added++;
+      addedNames.push(s.schemeName);
+    }
+    return { added, addedNames };
+  },
+});
+
 /* ------------------------------ queries ------------------------------ */
 
 /** Latest snapshot per ETF for the dashboard: ETF + latest quote + latest inav + latest nav. */
@@ -208,8 +248,9 @@ export const dashboard = query({
   args: {},
   handler: async (ctx) => {
     const etfs = await ctx.db.query("etfs").collect();
+    const live = etfs.filter((e) => e.status === "active" || e.status == null);
     const out = [] as any[];
-    for (const e of etfs) {
+    for (const e of live) {
       const quote = await ctx.db
         .query("quotes")
         .withIndex("by_etf_time", (q) => q.eq("etfId", e._id))

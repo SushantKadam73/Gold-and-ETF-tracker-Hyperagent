@@ -37,4 +37,13 @@ crons.cron(
   {}
 );
 
+// Auto-discover new gold/silver ETFs weekly (Mon ~09:00 IST = 03:30 UTC).
+// New funds are added as 'pending_review' until grams-per-unit is verified.
+crons.cron(
+  "discover_etfs_weekly",
+  "30 3 * * 1",
+  internal.discover.discoverNewEtfs,
+  {}
+);
+
 export default crons;
