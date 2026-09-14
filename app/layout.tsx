@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Gold & Silver ETF Tracker",
@@ -15,7 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ConvexClientProvider>
           <div className="mx-auto max-w-6xl px-4 py-6">
             <Header />
-            <main>{children}</main>
+            <main>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </main>
             <Footer />
           </div>
         </ConvexClientProvider>
