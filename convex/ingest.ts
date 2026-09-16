@@ -2,10 +2,12 @@
 
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { UPSTOX_KEYS } from "./seed/etfUniverse";
 
 /**
- * Upstox Market Quote V3 (full) — batched for all tracked ISINs.
+ * Upstox Market Quote V3 (full) — batched across ALL tracked instruments (ETFs + SGBs),
+ * using each instrument's own exchange-scoped key (NSE_EQ|… or BSE_EQ|…) so BSE-only
+ * ETFs and SGBs are priced too. Keys come from the DB, not a static list, so newly
+ * auto-discovered instruments are picked up automatically on the next poll.
  * Requires UPSTOX_ACCESS_TOKEN set as a Convex environment variable (server-side only).
  */
 export const fetchUpstoxQuotes = internalAction({
@@ -24,37 +26,48 @@ export const fetchUpstoxQuotes = internalAction({
       return { ok: false, reason: "no_token" };
     }
     try {
-      const keys = UPSTOX_KEYS.join(",");
-      const url = `https://api.upstox.com/v3/market-quote/quotes?instrument_key=${encodeURIComponent(keys)}&mode=full`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-      });
-      if (!res.ok) throw new Error(`Upstox ${res.status}`);
-      const json = await res.json();
-      const data = json?.data ?? {};
+      // Pull live instrument keys from the DB (exchange-scoped per instrument).
+      const instruments: Array<{ isin: string; upstoxKey: string }> =
+        await ctx.runQuery(internal.functions.activeUpstoxKeys, {});
+      const keys = instruments.map((i) => i.upstoxKey);
+      if (keys.length === 0) return { ok: true, count: 0, note: "no instruments" };
+
+      // Upstox accepts up to 500 instrument keys per call; chunk defensively.
+      const chunks: string[][] = [];
+      for (let i = 0; i < keys.length; i += 450) chunks.push(keys.slice(i, i + 450));
+
       const now = Date.now();
       let count = 0;
-      for (const [key, q] of Object.entries<any>(data)) {
-        const isin = key.split("|")[1] ?? q?.instrument_token?.split("|")[1];
-        if (!isin) continue;
-        const depth = q?.depth ?? {};
-        const bestBid = depth?.buy?.[0];
-        const bestAsk = depth?.sell?.[0];
-        await ctx.runMutation(internal.functions.upsertQuote, {
-          isin,
-          ltp: num(q?.last_price),
-          open: num(q?.ohlc?.open),
-          high: num(q?.ohlc?.high),
-          low: num(q?.ohlc?.low),
-          close: num(q?.ohlc?.close),
-          bidPrice: num(bestBid?.price),
-          bidQty: num(bestBid?.quantity),
-          askPrice: num(bestAsk?.price),
-          askQty: num(bestAsk?.quantity),
-          lastTradeTime: q?.last_trade_time ? Date.parse(q.last_trade_time) : undefined,
-          sourceTs: now,
+      for (const chunk of chunks) {
+        const url = `https://api.upstox.com/v3/market-quote/quotes?instrument_key=${encodeURIComponent(chunk.join(","))}&mode=full`;
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
         });
-        count++;
+        if (!res.ok) throw new Error(`Upstox ${res.status}`);
+        const json = await res.json();
+        const data = json?.data ?? {};
+        for (const [key, q] of Object.entries<any>(data)) {
+          const isin = key.split("|")[1] ?? q?.instrument_token?.split("|")[1];
+          if (!isin) continue;
+          const depth = q?.depth ?? {};
+          const bestBid = depth?.buy?.[0];
+          const bestAsk = depth?.sell?.[0];
+          await ctx.runMutation(internal.functions.upsertQuote, {
+            isin,
+            ltp: num(q?.last_price),
+            open: num(q?.ohlc?.open),
+            high: num(q?.ohlc?.high),
+            low: num(q?.ohlc?.low),
+            close: num(q?.ohlc?.close),
+            bidPrice: num(bestBid?.price),
+            bidQty: num(bestBid?.quantity),
+            askPrice: num(bestAsk?.price),
+            askQty: num(bestAsk?.quantity),
+            lastTradeTime: q?.last_trade_time ? Date.parse(q.last_trade_time) : undefined,
+            sourceTs: now,
+          });
+          count++;
+        }
       }
       await ctx.runMutation(internal.functions.logFetch, {
         jobName: "upstox_quotes",

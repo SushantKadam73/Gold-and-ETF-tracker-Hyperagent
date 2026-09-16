@@ -6,11 +6,15 @@
  */
 
 export type Metal = "gold" | "silver";
+export type Kind = "etf" | "sgb";
+export type Exchange = "NSE" | "BSE";
 
 export interface EtfSeed {
   schemeName: string;
   amcName: string;
   metal: Metal;
+  kind?: Kind; // default 'etf'
+  primaryExchange?: Exchange; // default 'NSE'
   isin: string;
   nseSymbol: string;
   bseSymbol: string | null; // null = NSE-only

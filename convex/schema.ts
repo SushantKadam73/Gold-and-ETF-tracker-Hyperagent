@@ -12,10 +12,14 @@ export default defineSchema({
     schemeName: v.string(),
     amcName: v.string(),
     metal: v.union(v.literal("gold"), v.literal("silver")),
+    // instrument kind: 'etf' (gold/silver ETF) or 'sgb' (Sovereign Gold Bond)
+    kind: v.optional(v.union(v.literal("etf"), v.literal("sgb"))),
+    // primary exchange this instrument's price/iNAV is read from: 'NSE' or 'BSE'
+    primaryExchange: v.optional(v.union(v.literal("NSE"), v.literal("BSE"))),
     isin: v.string(),
     nseSymbol: v.string(),
     bseSymbol: v.optional(v.union(v.string(), v.null())),
-    upstoxKey: v.string(),
+    upstoxKey: v.string(), // exchange-scoped: NSE_EQ|<isin> or BSE_EQ|<isin>
     gramsPerUnit: v.number(),
     faceValueNote: v.optional(v.string()),
     amfiSchemeId: v.optional(v.string()),
@@ -24,7 +28,8 @@ export default defineSchema({
   })
     .index("by_isin", ["isin"])
     .index("by_nseSymbol", ["nseSymbol"])
-    .index("by_metal", ["metal"]),
+    .index("by_metal", ["metal"])
+    .index("by_kind", ["kind"]),
 
   quotes: defineTable({
     etfId: v.id("etfs"),

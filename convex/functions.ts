@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { ETF_UNIVERSE } from "./seed/etfUniverse";
 
@@ -214,9 +214,13 @@ export const reconcileUniverse = internalMutation({
       schemeName: v.string(),
       amcName: v.string(),
       metal: v.union(v.literal("gold"), v.literal("silver")),
-      nav: v.number(),
+      kind: v.optional(v.union(v.literal("etf"), v.literal("sgb"))),
+      primaryExchange: v.optional(v.union(v.literal("NSE"), v.literal("BSE"))),
       nseSymbol: v.string(),
+      bseSymbol: v.optional(v.union(v.string(), v.null())),
+      upstoxKey: v.string(),
       gramsPerUnit: v.number(),
+      faceValueNote: v.optional(v.string()),
     })),
   },
   handler: async (ctx, { schemes }) => {
@@ -231,23 +235,26 @@ export const reconcileUniverse = internalMutation({
           schemeName: s.schemeName,
           amcName: s.amcName,
           metal: s.metal,
+          kind: s.kind ?? "etf",
+          primaryExchange: s.primaryExchange ?? "NSE",
           isin: s.isin,
           nseSymbol: s.nseSymbol,
-          bseSymbol: null,
-          upstoxKey: `NSE_EQ|${s.isin}`,
+          bseSymbol: s.bseSymbol ?? null,
+          upstoxKey: s.upstoxKey,
           gramsPerUnit: s.gramsPerUnit,
-          faceValueNote: "auto-discovered; unit factor estimated from NAV",
-          amfiSchemeId: s.schemeId,
+          faceValueNote: s.faceValueNote,
+          amfiSchemeId: s.schemeId || undefined,
           status: "active",
           updatedAt: now,
         });
         added++;
       } else {
-        // rename / metadata refresh — only touch identity fields, preserve verified unit factor
+        // rename / metadata refresh — preserve a verified unit factor and exchange mapping
         if (existing.schemeName !== s.schemeName || existing.amcName !== s.amcName || existing.status !== "active") {
           await ctx.db.patch(existing._id, {
             schemeName: s.schemeName,
             amcName: s.amcName,
+            kind: existing.kind ?? s.kind ?? "etf",
             status: "active",
             ...(existing.nseSymbol ? {} : { nseSymbol: s.nseSymbol }),
             updatedAt: now,
@@ -257,7 +264,7 @@ export const reconcileUniverse = internalMutation({
       }
     }
 
-    // delist: DB funds absent from AMFI
+    // delist: DB funds absent from the source
     const all = await ctx.db.query("etfs").collect();
     for (const e of all) {
       if (!seenIsins.has(e.isin) && e.status !== "inactive") {
@@ -271,6 +278,18 @@ export const reconcileUniverse = internalMutation({
 });
 
 /* ------------------------------ queries ------------------------------ */
+
+/** Exchange-scoped Upstox keys for every active instrument (ETF + SGB). Drives quote ingestion. */
+export const activeUpstoxKeys = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("etfs").collect();
+    return all
+      .filter((e) => e.status !== "inactive" && e.upstoxKey)
+      .map((e) => ({ isin: e.isin, upstoxKey: e.upstoxKey }));
+  },
+});
+
 
 /** Latest snapshot per ETF for the dashboard: ETF + latest quote + latest inav + latest nav. */
 export const dashboard = query({

@@ -24,14 +24,17 @@ export default function DashboardPage() {
     );
   }
 
-  const gold = rows.filter((r: any) => r.etf.metal === "gold");
-  const silver = rows.filter((r: any) => r.etf.metal === "silver");
+  const isSgb = (r: any) => r.etf.kind === "sgb";
+  const gold = rows.filter((r: any) => !isSgb(r) && r.etf.metal === "gold");
+  const silver = rows.filter((r: any) => !isSgb(r) && r.etf.metal === "silver");
+  const sgb = rows.filter(isSgb);
 
   return (
     <div className="space-y-8">
       <MarketNote />
       <Section title="Gold ETFs" rows={gold} />
       <Section title="Silver ETFs" rows={silver} />
+      {sgb.length > 0 && <Section title="Sovereign Gold Bonds" rows={sgb} />}
     </div>
   );
 }
