@@ -34,6 +34,29 @@ export const seedSgbRegistry = mutation({
       };
       if (existing) await ctx.db.patch(existing._id, doc);
       else await ctx.db.insert("sgbTranches", doc);
+
+      // Also register trading SGBs into the shared instruments table (etfs) so the
+      // Upstox quote-ingestion cron prices them immediately (drives Price/vs Gold/YTM).
+      if (status === "trading" && s.nseSymbol) {
+        const inst = await ctx.db.query("etfs").withIndex("by_isin", (q) => q.eq("isin", s.isin)).unique();
+        if (!inst) {
+          await ctx.db.insert("etfs", {
+            schemeName: s.series,
+            amcName: "Government of India (RBI)",
+            metal: "gold",
+            kind: "sgb",
+            primaryExchange: "NSE",
+            isin: s.isin,
+            nseSymbol: s.nseSymbol,
+            bseSymbol: null,
+            upstoxKey: `NSE_EQ|${s.isin}`,
+            gramsPerUnit: 1.0, // 1 SGB unit = 1 g gold
+            faceValueNote: "Sovereign Gold Bond; 1 unit = 1 g gold",
+            status: "active",
+            updatedAt: now,
+          });
+        }
+      }
       upserted++;
     }
     return { upserted };
