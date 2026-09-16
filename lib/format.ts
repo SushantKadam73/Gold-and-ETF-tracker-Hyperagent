@@ -3,7 +3,7 @@
 export const IST = "Asia/Kolkata";
 
 export function formatINR(n: number | null | undefined, decimals = 2): string {
-  if (n == null || !isFinite(n)) return "—";
+  if (n == null || !isFinite(n) || n <= 0) return "—"; // 0 / negative treated as missing
   return "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
@@ -60,7 +60,7 @@ export function premiumVsInav(
   now = Date.now()
 ): PremiumResult {
   const label = "vs iNAV";
-  if (ltp == null || inav == null || inav === 0) return { pct: null, suppressed: true, reason: "missing", label };
+  if (ltp == null || ltp <= 0 || inav == null || inav <= 0) return { pct: null, suppressed: true, reason: "missing", label };
   if (!quoteTs || !inavTs) return { pct: null, suppressed: true, reason: "no_timestamp", label };
   const sameDay =
     new Date(quoteTs).toDateString() === new Date(now).toDateString() &&
@@ -81,7 +81,7 @@ export function premiumVsNav(
   now = Date.now()
 ): PremiumResult {
   const label = "vs NAV (EOD)";
-  if (ltp == null || nav == null || nav === 0) return { pct: null, suppressed: true, reason: "missing", label };
+  if (ltp == null || ltp <= 0 || nav == null || nav <= 0) return { pct: null, suppressed: true, reason: "missing", label };
   return { pct: ((ltp - nav) / nav) * 100, suppressed: false, label };
 }
 

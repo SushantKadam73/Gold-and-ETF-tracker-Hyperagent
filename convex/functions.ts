@@ -201,43 +201,72 @@ function normalize(s: string) {
 }
 
 /**
- * Register newly discovered ETFs as status 'pending_review' (not live).
- * A fund goes live only after its grams-per-unit is verified and status set to 'active'.
+ * Full-lifecycle reconciliation of the ETF universe against AMFI. Fully automatic:
+ *  - ADDED:    new ISIN → insert as ACTIVE with resolved symbol + estimated grams-per-unit.
+ *  - RENAMED:  same ISIN, changed schemeName → update name/AMC in place.
+ *  - DELISTED: present in DB but absent from AMFI → mark status 'inactive' (history kept).
  */
-export const registerDiscovered = internalMutation({
+export const reconcileUniverse = internalMutation({
   args: {
     schemes: v.array(v.object({
       schemeId: v.string(),
-      ISINPrimary: v.string(),
+      isin: v.string(),
       schemeName: v.string(),
-      _metal: v.optional(v.string()),
+      amcName: v.string(),
+      metal: v.union(v.literal("gold"), v.literal("silver")),
+      nav: v.number(),
+      nseSymbol: v.string(),
+      gramsPerUnit: v.number(),
     })),
   },
   handler: async (ctx, { schemes }) => {
     const now = Date.now();
-    let added = 0;
-    const addedNames: string[] = [];
+    let added = 0, renamed = 0, delisted = 0;
+    const seenIsins = new Set(schemes.map((s) => s.isin));
+
     for (const s of schemes) {
-      const existing = await ctx.db.query("etfs").withIndex("by_isin", (q) => q.eq("isin", s.ISINPrimary)).unique();
-      if (existing) continue; // already tracked
-      await ctx.db.insert("etfs", {
-        schemeName: s.schemeName,
-        amcName: "",
-        metal: (s._metal === "silver" ? "silver" : "gold") as any,
-        isin: s.ISINPrimary,
-        nseSymbol: "", // resolved on review
-        bseSymbol: null,
-        upstoxKey: `NSE_EQ|${s.ISINPrimary}`,
-        gramsPerUnit: 0, // unknown until verified — 0 marks it pending
-        faceValueNote: "auto-discovered; grams-per-unit pending verification",
-        amfiSchemeId: s.schemeId,
-        status: "pending_review",
-        updatedAt: now,
-      });
-      added++;
-      addedNames.push(s.schemeName);
+      const existing = await ctx.db.query("etfs").withIndex("by_isin", (q) => q.eq("isin", s.isin)).unique();
+      if (!existing) {
+        await ctx.db.insert("etfs", {
+          schemeName: s.schemeName,
+          amcName: s.amcName,
+          metal: s.metal,
+          isin: s.isin,
+          nseSymbol: s.nseSymbol,
+          bseSymbol: null,
+          upstoxKey: `NSE_EQ|${s.isin}`,
+          gramsPerUnit: s.gramsPerUnit,
+          faceValueNote: "auto-discovered; unit factor estimated from NAV",
+          amfiSchemeId: s.schemeId,
+          status: "active",
+          updatedAt: now,
+        });
+        added++;
+      } else {
+        // rename / metadata refresh — only touch identity fields, preserve verified unit factor
+        if (existing.schemeName !== s.schemeName || existing.amcName !== s.amcName || existing.status !== "active") {
+          await ctx.db.patch(existing._id, {
+            schemeName: s.schemeName,
+            amcName: s.amcName,
+            status: "active",
+            ...(existing.nseSymbol ? {} : { nseSymbol: s.nseSymbol }),
+            updatedAt: now,
+          });
+          renamed++;
+        }
+      }
     }
-    return { added, addedNames };
+
+    // delist: DB funds absent from AMFI
+    const all = await ctx.db.query("etfs").collect();
+    for (const e of all) {
+      if (!seenIsins.has(e.isin) && e.status !== "inactive") {
+        await ctx.db.patch(e._id, { status: "inactive", updatedAt: now });
+        delisted++;
+      }
+    }
+
+    return { added, renamed, delisted };
   },
 });
 
@@ -248,7 +277,7 @@ export const dashboard = query({
   args: {},
   handler: async (ctx) => {
     const etfs = await ctx.db.query("etfs").collect();
-    const live = etfs.filter((e) => e.status === "active" || e.status == null);
+    const live = etfs.filter((e) => e.status !== "inactive");
     const out = [] as any[];
     for (const e of live) {
       const quote = await ctx.db

@@ -37,12 +37,13 @@ crons.cron(
   {}
 );
 
-// Auto-discover new gold/silver ETFs weekly (Mon ~09:00 IST = 03:30 UTC).
-// New funds are added as 'pending_review' until grams-per-unit is verified.
+// Auto-discover ETF lifecycle (add/rename/delist) daily (~09:00 IST = 03:30 UTC).
+// New funds are auto-activated with a derived unit factor and symbol; delisted funds
+// are marked inactive. Fully automatic, no manual step.
 crons.cron(
-  "discover_etfs_weekly",
-  "30 3 * * 1",
-  internal.discover.discoverNewEtfs,
+  "discover_etfs_daily",
+  "30 3 * * *",
+  internal.discover.discoverEtfs,
   {}
 );
 
