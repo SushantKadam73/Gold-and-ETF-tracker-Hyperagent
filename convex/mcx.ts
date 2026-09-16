@@ -1,7 +1,6 @@
 "use node";
 
-import { v } from "convex/values";
-import { internalAction, internalMutation, query } from "./_generated/server";
+import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36";
@@ -62,14 +61,14 @@ export const fetchMcxRefs = internalAction({
 
       // 3. store normalized (gold ₹/10g → ₹/g; silver ₹/kg → ₹/g)
       if (goldLtp != null) {
-        await ctx.runMutation(internal.mcx.upsertMetalRef, {
+        await ctx.runMutation(internal.metalRefs.upsertMetalRef, {
           metal: "gold", source: "mcx_fut", symbol: goldFut.trading_symbol,
           instrumentKey: goldFut.instrument_key, rawPrice: goldLtp, rawUnit: "per_10g",
           pricePerGram: goldLtp / 10, sourceTs: now,
         });
       }
       if (silverLtp != null) {
-        await ctx.runMutation(internal.mcx.upsertMetalRef, {
+        await ctx.runMutation(internal.metalRefs.upsertMetalRef, {
           metal: "silver", source: "mcx_fut", symbol: silverFut.trading_symbol,
           instrumentKey: silverFut.instrument_key, rawPrice: silverLtp, rawUnit: "per_kg",
           pricePerGram: silverLtp / 1000, sourceTs: now,
@@ -87,34 +86,5 @@ export const fetchMcxRefs = internalAction({
       });
       return { ok: false, error: String(e?.message ?? e) };
     }
-  },
-});
-
-export const upsertMetalRef = internalMutation({
-  args: {
-    metal: v.string(), source: v.string(), symbol: v.optional(v.string()),
-    instrumentKey: v.optional(v.string()), rawPrice: v.number(), rawUnit: v.string(),
-    pricePerGram: v.optional(v.number()), sourceTs: v.number(),
-  },
-  handler: async (ctx, a) => {
-    await ctx.db.insert("metalRefs", { ...a, fetchedAt: Date.now() });
-  },
-});
-
-/** Latest MCX reference per metal. */
-export const latestMetalRefs = query({
-  args: {},
-  handler: async (ctx) => {
-    const out: Record<string, any> = {};
-    for (const metal of ["gold", "silver"] as const) {
-      const r = await ctx.db
-        .query("metalRefs")
-        .withIndex("by_metal_time", (q) => q.eq("metal", metal))
-        .order("desc")
-        .filter((q) => q.eq(q.field("source"), "mcx_fut"))
-        .first();
-      out[metal] = r ?? null;
-    }
-    return out;
   },
 });

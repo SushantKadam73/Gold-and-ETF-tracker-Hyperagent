@@ -11,7 +11,7 @@ import {
 } from "../lib/format";
 import { useDashboard } from "../lib/useData";
 
-const metalRefsQuery = makeFunctionReference<"query", Record<string, never>, any>("mcx:latestMetalRefs") as any;
+const metalRefsQuery = makeFunctionReference<"query", Record<string, never>, any>("metalRefs:latestMetalRefs") as any;
 const hasBackend = !!process.env.NEXT_PUBLIC_CONVEX_URL;
 
 function McxStrip() {
