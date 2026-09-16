@@ -94,8 +94,8 @@ function Section({ title, rows }: { title: string; rows: any[] }) {
       </div>
       <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
         <table className="w-full min-w-[760px] text-sm">
-          <thead className="sticky top-[65px] z-10">
-            <tr className="border-b border-zinc-200 bg-zinc-50/95 text-left text-[11px] font-medium uppercase tracking-wider text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 dark:text-zinc-400">
+          <thead className="sticky top-0 z-10">
+            <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
               <th className="px-4 py-2.5">ETF</th>
               <th className="px-3 py-2.5 text-right">Price</th>
               <th className="px-3 py-2.5 text-right">iNAV</th>
