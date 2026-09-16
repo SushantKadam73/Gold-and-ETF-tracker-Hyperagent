@@ -38,12 +38,19 @@ crons.cron(
 );
 
 // Auto-discover ETF lifecycle (add/rename/delist) daily (~09:00 IST = 03:30 UTC).
-// New funds are auto-activated with a derived unit factor and symbol; delisted funds
-// are marked inactive. Fully automatic, no manual step.
 crons.cron(
   "discover_etfs_daily",
   "30 3 * * *",
   internal.discover.discoverEtfs,
+  {}
+);
+
+// MCX gold/silver reference prices (nearest-month futures via Upstox), intraday.
+// MCX trades 09:00–23:30 IST; poll during the same market-hours gate as equities.
+crons.interval(
+  "poll_mcx_refs",
+  { minutes: 5 },
+  internal.mcx.fetchMcxRefs,
   {}
 );
 

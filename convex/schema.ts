@@ -122,4 +122,20 @@ export default defineSchema({
     .index("by_isin", ["isin"])
     .index("by_status", ["status"])
     .index("by_maturity", ["maturityDateTs"]),
+
+  // MCX reference metal prices (gold ₹/10g, silver ₹/kg) from nearest-month futures via Upstox.
+  // Also carries the AMFI-derived ₹/gram reference (GOLDBEES/SILVERBEES NAV) for premium math.
+  metalRefs: defineTable({
+    metal: v.union(v.literal("gold"), v.literal("silver")),
+    source: v.string(),            // 'mcx_fut' | 'amfi_nav'
+    symbol: v.optional(v.string()), // MCX trading symbol, when source is mcx_fut
+    instrumentKey: v.optional(v.string()),
+    pricePerGram: v.optional(v.number()), // normalized ₹/gram where meaningful
+    rawPrice: v.number(),          // as quoted (gold ₹/10g for MCX, ₹/kg for silver MCX, per-unit NAV for AMFI)
+    rawUnit: v.string(),           // 'per_10g' | 'per_kg' | 'per_unit'
+    sourceTs: v.number(),
+    fetchedAt: v.number(),
+  })
+    .index("by_metal_source", ["metal", "source"])
+    .index("by_metal_time", ["metal", "sourceTs"]),
 });

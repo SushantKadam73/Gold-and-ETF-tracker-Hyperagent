@@ -4,10 +4,40 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useQuery } from "convex/react";
+import { makeFunctionReference } from "convex/server";
 import {
   formatINR, istTime, premiumVsInav, premiumVsNav, spreadPct, pctClass,
 } from "../lib/format";
 import { useDashboard } from "../lib/useData";
+
+const metalRefsQuery = makeFunctionReference<"query", Record<string, never>, any>("mcx:latestMetalRefs") as any;
+const hasBackend = !!process.env.NEXT_PUBLIC_CONVEX_URL;
+
+function McxStrip() {
+  if (!hasBackend) return null;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const refs = useQuery(metalRefsQuery, {});
+  if (!refs || (!refs.gold && !refs.silver)) return null;
+  return (
+    <div className="mb-6 flex flex-wrap gap-3">
+      {refs.gold ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 dark:border-amber-900/50 dark:bg-amber-950/40">
+          <span className="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-400">MCX Gold</span>
+          <span className="ml-2 font-semibold tabular-nums">{formatINR(refs.gold.pricePerGram)}/g</span>
+          <span className="ml-2 text-xs text-zinc-400">{refs.gold.symbol} · {istTime(refs.gold.sourceTs)}</span>
+        </div>
+      ) : null}
+      {refs.silver ? (
+        <div className="rounded-lg border border-zinc-300 bg-zinc-100 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
+          <span className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">MCX Silver</span>
+          <span className="ml-2 font-semibold tabular-nums">{formatINR(refs.silver.pricePerGram)}/g</span>
+          <span className="ml-2 text-xs text-zinc-400">{refs.silver.symbol} · {istTime(refs.silver.sourceTs)}</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const rows = useDashboard();
@@ -32,6 +62,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <MarketNote />
+      <McxStrip />
       <Section title="Gold ETFs" rows={gold} />
       <Section title="Silver ETFs" rows={silver} />
       {sgb.length > 0 && <Section title="Sovereign Gold Bonds" rows={sgb} />}
