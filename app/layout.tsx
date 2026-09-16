@@ -38,6 +38,7 @@ function Header() {
       </div>
       <nav className="flex items-center gap-4 text-sm">
         <a href="/" className="hover:underline">Dashboard</a>
+        <a href="/sgb" className="hover:underline">SGB</a>
         <a href="/calculator" className="hover:underline">ETF vs Physical</a>
         <ThemeToggle />
       </nav>

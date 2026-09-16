@@ -1,0 +1,82 @@
+/**
+ * Sovereign Gold Bond registry — all 67 tranches, Nov 2015 to Feb 2024 (scheme closed).
+ * Source: Wikipedia SGB tranche table (issue date, issue price, units, redemption price) +
+ * Upstox NSE instrument dump (trading symbols). Versioned; matured tranches keep redemption price.
+ * Cash flows: 2.5% p.a. semi-annual coupon on issue price; redemption at 3-day IBJA 999 average;
+ * premature redemption every 6 months from year 5 on coupon dates.
+ */
+
+export interface SgbSeed {
+  series: string; isin: string; issueDate: string; issuePrice: number;
+  unitsSubscribed: number | null; redemptionPrice: number | null; nseSymbol: string | null;
+}
+
+export const SGB_REGISTRY: SgbSeed[] = [
+  { series: "2015-I", isin: "IN0020150085", issueDate: "2015-11-30", issuePrice: 2684, unitsSubscribed: 913571, redemptionPrice: 6132, nseSymbol: null },
+  { series: "2016-I", isin: "IN0020150101", issueDate: "2016-02-08", issuePrice: 2600, unitsSubscribed: 2869973, redemptionPrice: 6271, nseSymbol: null },
+  { series: "2016-II", isin: "IN0020150119", issueDate: "2016-03-29", issuePrice: 2916, unitsSubscribed: 1119741, redemptionPrice: 6601, nseSymbol: null },
+  { series: "2016-17 Series I", isin: "IN0020160027", issueDate: "2016-08-05", issuePrice: 3119, unitsSubscribed: 2953025, redemptionPrice: 6938, nseSymbol: null },
+  { series: "2016-17 Series II", isin: "IN0020160043", issueDate: "2016-09-30", issuePrice: 3150, unitsSubscribed: 2615800, redemptionPrice: 7517, nseSymbol: null },
+  { series: "2016-17 Series III", isin: "IN0020160076", issueDate: "2016-11-17", issuePrice: 3007, unitsSubscribed: 3598055, redemptionPrice: 7788, nseSymbol: null },
+  { series: "2016-17 Series IV", isin: "IN0020160126", issueDate: "2017-03-17", issuePrice: 2943, unitsSubscribed: 2220885, redemptionPrice: 8624, nseSymbol: null },
+  { series: "2017-18 Series I", isin: "IN0020170018", issueDate: "2017-05-12", issuePrice: 2951, unitsSubscribed: 2027695, redemptionPrice: 9486, nseSymbol: null },
+  { series: "2017-18 Series II", isin: "IN0020170034", issueDate: "2017-07-28", issuePrice: 2830, unitsSubscribed: 2349953, redemptionPrice: 9924, nseSymbol: null },
+  { series: "2017-18 Series III", isin: "IN0020170059", issueDate: "2017-10-16", issuePrice: 2956, unitsSubscribed: 264815, redemptionPrice: 12567, nseSymbol: null },
+  { series: "2017-18 Series IV", isin: "IN0020170067", issueDate: "2017-10-23", issuePrice: 2987, unitsSubscribed: 378945, redemptionPrice: 12704, nseSymbol: null },
+  { series: "2017-18 Series V", isin: "IN0020170075", issueDate: "2017-10-30", issuePrice: 2971, unitsSubscribed: 174024, redemptionPrice: 11992, nseSymbol: null },
+  { series: "2017-18 Series VI", isin: "IN0020170083", issueDate: "2017-11-06", issuePrice: 2945, unitsSubscribed: 153356, redemptionPrice: 12066, nseSymbol: null },
+  { series: "2017-18 Series VII", isin: "IN0020170091", issueDate: "2017-11-13", issuePrice: 2934, unitsSubscribed: 175121, redemptionPrice: 12350, nseSymbol: null },
+  { series: "2017-18 Series VIII", isin: "IN0020170109", issueDate: "2017-11-20", issuePrice: 2961, unitsSubscribed: 135666, redemptionPrice: 12300, nseSymbol: null },
+  { series: "2017-18 Series IX", isin: "IN0020170117", issueDate: "2017-11-27", issuePrice: 2964, unitsSubscribed: 105512, redemptionPrice: 12484, nseSymbol: null },
+  { series: "2017-18 Series X", isin: "IN0020170125", issueDate: "2017-12-04", issuePrice: 2961, unitsSubscribed: 107380, redemptionPrice: 12820, nseSymbol: null },
+  { series: "2017-18 Series XI", isin: "IN0020170133", issueDate: "2017-12-11", issuePrice: 2952, unitsSubscribed: 81614, redemptionPrice: 12801, nseSymbol: null },
+  { series: "2017-18 Series XII", isin: "IN0020170141", issueDate: "2017-12-18", issuePrice: 2890, unitsSubscribed: 111218, redemptionPrice: 13245, nseSymbol: null },
+  { series: "2017-18 Series XIII", isin: "IN0020170158", issueDate: "2017-12-26", issuePrice: 2866, unitsSubscribed: 131958, redemptionPrice: 13563, nseSymbol: null },
+  { series: "2017-18 Series XIV", isin: "IN0020170166", issueDate: "2018-01-01", issuePrice: 2881, unitsSubscribed: 327434, redemptionPrice: 13486, nseSymbol: null },
+  { series: "2018-19 Series I", isin: "IN0020180033", issueDate: "2018-05-04", issuePrice: 3114, unitsSubscribed: 650337, redemptionPrice: 14901, nseSymbol: null },
+  { series: "2018-19 Series II", isin: "IN0020180249", issueDate: "2018-10-23", issuePrice: 3146, unitsSubscribed: 312258, redemptionPrice: null, nseSymbol: "SGBOCT26" },
+  { series: "2018-19 Series III", isin: "IN0020180314", issueDate: "2018-11-13", issuePrice: 3183, unitsSubscribed: 409398, redemptionPrice: null, nseSymbol: "SGBNOV26" },
+  { series: "2018-19 Series IV", isin: "IN0020180389", issueDate: "2019-01-01", issuePrice: 3119, unitsSubscribed: 207886, redemptionPrice: null, nseSymbol: "SGBDEC26" },
+  { series: "2018-19 Series V", isin: "IN0020180462", issueDate: "2019-01-22", issuePrice: 3214, unitsSubscribed: 243606, redemptionPrice: null, nseSymbol: "SGBJAN27" },
+  { series: "2018-19 Series VI", isin: "IN0020180561", issueDate: "2019-02-12", issuePrice: 3326, unitsSubscribed: 207388, redemptionPrice: null, nseSymbol: "SGBFEB27" },
+  { series: "2019-20 Series I", isin: "IN0020190073", issueDate: "2019-06-11", issuePrice: 3196, unitsSubscribed: 459789, redemptionPrice: null, nseSymbol: "SGBJUN27" },
+  { series: "2019-20 Series II", isin: "IN0020190081", issueDate: "2019-07-16", issuePrice: 3443, unitsSubscribed: 535947, redemptionPrice: null, nseSymbol: "SGBJUL27" },
+  { series: "2019-20 Series III", isin: "IN0020190107", issueDate: "2019-08-14", issuePrice: 3499, unitsSubscribed: 1024837, redemptionPrice: null, nseSymbol: "SGBAUG27" },
+  { series: "2019-20 Series IV", isin: "IN0020190115", issueDate: "2019-09-17", issuePrice: 3890, unitsSubscribed: 627892, redemptionPrice: null, nseSymbol: "SGBSEP27" },
+  { series: "2019-20 Series V", isin: "IN0020190370", issueDate: "2019-10-15", issuePrice: 3788, unitsSubscribed: 455776, redemptionPrice: null, nseSymbol: "SGBOCT27" },
+  { series: "2019-20 Series VI", isin: "IN0020190388", issueDate: "2019-10-30", issuePrice: 3835, unitsSubscribed: 693210, redemptionPrice: null, nseSymbol: "SGBOCT27VI" },
+  { series: "2019-20 Series VII", isin: "IN0020190461", issueDate: "2019-12-10", issuePrice: 3795, unitsSubscribed: 648304, redemptionPrice: null, nseSymbol: "SGBDC27VII" },
+  { series: "2019-20 Series VIII", isin: "IN0020190537", issueDate: "2020-01-21", issuePrice: 4016, unitsSubscribed: 522119, redemptionPrice: null, nseSymbol: "SGBJ28VIII" },
+  { series: "2019-20 Series IX", isin: "IN0020190545", issueDate: "2020-02-11", issuePrice: 4070, unitsSubscribed: 405957, redemptionPrice: null, nseSymbol: "SGBFEB28IX" },
+  { series: "2019-20 Series X", isin: "IN0020190552", issueDate: "2020-03-11", issuePrice: 4260, unitsSubscribed: 757338, redemptionPrice: null, nseSymbol: "SGBMAR28X" },
+  { series: "2020-21, Series I", isin: "IN0020200062", issueDate: "2020-04-28", issuePrice: 4639, unitsSubscribed: 1772874, redemptionPrice: null, nseSymbol: "SGBAPR28I" },
+  { series: "2020-21, Series II", isin: "IN0020200088", issueDate: "2020-05-19", issuePrice: 4590, unitsSubscribed: 2544294, redemptionPrice: null, nseSymbol: "SGBMAY28" },
+  { series: "2020-21, Series III", isin: "IN0020200104", issueDate: "2020-06-16", issuePrice: 4677, unitsSubscribed: 2388328, redemptionPrice: null, nseSymbol: "SGBJUN28" },
+  { series: "2020-21, Series IV", isin: "IN0020200146", issueDate: "2020-07-14", issuePrice: 4852, unitsSubscribed: 4130820, redemptionPrice: null, nseSymbol: "SGBJUL28IV" },
+  { series: "2020-21, Series V", isin: "IN0020200161", issueDate: "2020-08-11", issuePrice: 5334, unitsSubscribed: 6349781, redemptionPrice: null, nseSymbol: "SGBAUG28V" },
+  { series: "2020-21, Series VI", isin: "IN0020200195", issueDate: "2020-09-08", issuePrice: 5117, unitsSubscribed: 3190133, redemptionPrice: null, nseSymbol: "SGBSEP28VI" },
+  { series: "2020-21, Series VII", isin: "IN0020200203", issueDate: "2020-10-20", issuePrice: 5051, unitsSubscribed: 1859518, redemptionPrice: null, nseSymbol: "SGBOC28VII" },
+  { series: "2020-21, Series VIII", isin: "IN0020200286", issueDate: "2020-11-18", issuePrice: 5177, unitsSubscribed: 1573457, redemptionPrice: null, nseSymbol: "SGBN28VIII" },
+  { series: "2020-21, Series IX", isin: "IN0020200377", issueDate: "2021-01-05", issuePrice: 5000, unitsSubscribed: 2869886, redemptionPrice: null, nseSymbol: "SGBJAN29IX" },
+  { series: "2020-21, Series X", isin: "IN0020200385", issueDate: "2021-01-19", issuePrice: 5104, unitsSubscribed: 1214048, redemptionPrice: null, nseSymbol: "SGBJAN29X" },
+  { series: "2020-21, Series XI", isin: "IN0020200393", issueDate: "2021-02-09", issuePrice: 4912, unitsSubscribed: 1227915, redemptionPrice: null, nseSymbol: "SGBFEB29XI" },
+  { series: "2020-21, Series XII", isin: "IN0020200427", issueDate: "2021-03-09", issuePrice: 4662, unitsSubscribed: 3230907, redemptionPrice: null, nseSymbol: "SGBMR29XII" },
+  { series: "2021-22, Series I", isin: "IN0020210053", issueDate: "2021-05-25", issuePrice: 4777, unitsSubscribed: 5318973, redemptionPrice: null, nseSymbol: "SGBMAY29I" },
+  { series: "2021-22, Series II", isin: "IN0020210061", issueDate: "2021-06-01", issuePrice: 4842, unitsSubscribed: 1898475, redemptionPrice: null, nseSymbol: "SGBJUN29II" },
+  { series: "2021-22, Series III", isin: "IN0020210087", issueDate: "2021-06-08", issuePrice: 4889, unitsSubscribed: 1479232, redemptionPrice: null, nseSymbol: "SGBJU29III" },
+  { series: "2021-22, Series IV", isin: "IN0020210111", issueDate: "2021-07-20", issuePrice: 4807, unitsSubscribed: 2923762, redemptionPrice: null, nseSymbol: "SGBJUL29IV" },
+  { series: "2021-22, Series V", isin: "IN0020210129", issueDate: "2021-08-17", issuePrice: 4790, unitsSubscribed: 2292743, redemptionPrice: null, nseSymbol: "SGBAUG29V" },
+  { series: "2021-22, Series VI", isin: "IN0020210145", issueDate: "2021-09-07", issuePrice: 4732, unitsSubscribed: 3520341, redemptionPrice: null, nseSymbol: "SGBSEP29VI" },
+  { series: "2021-22, Series VII", isin: "IN0020210178", issueDate: "2021-11-02", issuePrice: 4761, unitsSubscribed: 3248238, redemptionPrice: null, nseSymbol: "SGBNV29VII" },
+  { series: "2021-22, Series VIII", isin: "IN0020210228", issueDate: "2021-12-07", issuePrice: 4791, unitsSubscribed: 2480493, redemptionPrice: null, nseSymbol: "SGBD29VIII" },
+  { series: "2021-22, Series IX", isin: "IN0020210236", issueDate: "2022-01-18", issuePrice: 4786, unitsSubscribed: 2333188, redemptionPrice: null, nseSymbol: "SGBJAN30IX" },
+  { series: "2021-22, Series X", isin: "IN0020210319", issueDate: "2022-03-08", issuePrice: 5109, unitsSubscribed: 1539694, redemptionPrice: null, nseSymbol: "SGBMAR30X" },
+  { series: "2022-23, Series I", isin: "IN0020220045", issueDate: "2022-06-28", issuePrice: 5091, unitsSubscribed: 2557864, redemptionPrice: null, nseSymbol: "SGBJUN30" },
+  { series: "2022-23, Series II", isin: "IN0020220078", issueDate: "2022-08-30", issuePrice: 5197, unitsSubscribed: 3360408, redemptionPrice: null, nseSymbol: "SGBAUG30" },
+  { series: "2022-23, Series III", isin: "IN0020220110", issueDate: "2022-12-27", issuePrice: 5409, unitsSubscribed: 2811010, redemptionPrice: null, nseSymbol: "SGBDE30III" },
+  { series: "2022-23, Series IV", isin: "IN0020220169", issueDate: "2023-03-14", issuePrice: 5611, unitsSubscribed: 3531586, redemptionPrice: null, nseSymbol: "SGBMAR31IV" },
+  { series: "2023-24, Series I", isin: "IN0020230069", issueDate: "2023-06-27", issuePrice: 5926, unitsSubscribed: 7769290, redemptionPrice: null, nseSymbol: "SGBJUN31I" },
+  { series: "2023-24, Series II", isin: "IN0020230093", issueDate: "2023-09-20", issuePrice: 5923, unitsSubscribed: 11673960, redemptionPrice: null, nseSymbol: "SGBSEP31II" },
+  { series: "2023-24, Series III", isin: "IN0020230168", issueDate: "2023-12-28", issuePrice: 6199, unitsSubscribed: 12106807, redemptionPrice: null, nseSymbol: "SGBDE31III" },
+  { series: "2023-24, Series IV", isin: "IN0020230184", issueDate: "2024-02-21", issuePrice: 6263, unitsSubscribed: 12785729, redemptionPrice: null, nseSymbol: "SGBFEB32IV" },
+];

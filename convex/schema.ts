@@ -102,4 +102,24 @@ export default defineSchema({
     errorMessage: v.optional(v.string()),
     recordCount: v.optional(v.number()),
   }).index("by_job", ["jobName", "startedAt"]),
+
+  // Sovereign Gold Bond tranche registry (static dimension; one row per tranche ever issued)
+  sgbTranches: defineTable({
+    series: v.string(),           // e.g. '2020-21 Series VIII'
+    isin: v.string(),
+    nseSymbol: v.optional(v.union(v.string(), v.null())),
+    issueDate: v.string(),        // ISO date
+    issueDateTs: v.number(),
+    issuePrice: v.number(),       // ₹ per gram at issue
+    maturityDateTs: v.number(),   // issueDate + 8 years
+    firstPrematureTs: v.number(), // issueDate + 5 years
+    couponRate: v.number(),       // 0.025
+    unitsSubscribed: v.optional(v.union(v.number(), v.null())),
+    redemptionPrice: v.optional(v.union(v.number(), v.null())), // set once matured/redeemed
+    status: v.string(),           // 'trading' | 'matured'
+    updatedAt: v.number(),
+  })
+    .index("by_isin", ["isin"])
+    .index("by_status", ["status"])
+    .index("by_maturity", ["maturityDateTs"]),
 });
